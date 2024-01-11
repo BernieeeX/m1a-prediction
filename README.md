@@ -1,4 +1,4 @@
-# m6a-prediction
+# m1a-prediction
 #Part 1 model training
 #Get the fast5 file of IVT
 #multi_to_single_fast5
