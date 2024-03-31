@@ -1,3 +1,23 @@
+**m1A-prediction**
+
+**Quantitative profiling N1-Methyladenosine (m1A) RNA methylation from Oxford Nanopore direct RNA sequencing data**
+
+**The default models are applicable only to ONT sequencing data**
+
+**Model Download and environment installation**
+
+Users can directly use the following commands to download the models：
+```
+wget https://github.com/BernieeeX/m1a-prediction/tree/main/models
+
+```
+
+
+
+
+
+
+
 # m1a-prediction
 #Part 1 model training
 #Get the fast5 file of IVT
