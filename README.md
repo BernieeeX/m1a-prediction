@@ -4,14 +4,54 @@
 
 **The default models are applicable only to ONT sequencing data**
 
-**Model Download and environment installation**
+# **Ⅰ. Model Download and dependence installation**
 
-Users can directly use the following commands to download the models：
+(1). Model Download
+
+  Users can directly use the following commands to download the models：
 ```
 wget https://github.com/BernieeeX/m1a-prediction/tree/main/models
 
 ```
+(2). Dependence installation
 
+  The ``ont_fast5_api`` is a Python API for handling Fast5 files from Oxford Nanopore Technologies (ONT). 
+  
+  Source code: https://github.com/nanoporetech/ont_fast5_api
+  
+  it is available on github where it can be built from source:
+
+    git clone https://github.com/nanoporetech/ont_fast5_api
+    pip install ./ont_fast5_api
+
+  The ``pyguppyclient``  is a Python client library for communicating with the Guppy server from Oxford Nanopore Technologies (ONT). The Guppy server from ONT is a server-side software used for analyzing genetic sequencing data, capable of receiving raw electrical signal data and converting it into DNA sequences.
+
+  Source code: https://github.com/nanoporetech/pyguppyclient
+  
+    pip install pyguppyclient
+
+  Dependence list:
+
+
+**Source code dependence**
+
+soft or module | version
+---|---
+bedtools | v2.29.2
+samtools | 1.3.1
+minimap2 | 2.17-r941
+python                               |3.7.3
+h5py                               |2.9.0
+statsmodels                        |0.10.0
+joblib                        |0.16.0
+xgboost                       |0.80
+pysam                         |0.16.0.1
+tqdm                          |4.39.0
+pycairo                       |1.19.1
+scikit-learn              |0.22
+
+  
+# **Ⅱ. Pre-processing**
 
 
 
