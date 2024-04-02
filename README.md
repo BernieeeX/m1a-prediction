@@ -53,41 +53,85 @@ scikit-learn              |0.22
   
 # **Ⅱ. Pre-processing**
 
+**(1). Fast5 files convertion**
 
+The multi_read format obtained from ONT sequencing needs to be converted into smaller-sized fast5 files using a tool before proceeding with the next steps.
 
+```
+multi_to_single_fast5 -i /path/to/multi_fast5 -s /path/to/single_fast5 -t 12 --recursive 
+```
 
+**(2). Basecalling by using guppy**
 
+```
+guppy_basecaller -i /path/to/single_fast5 -s /path/to/fastq --flowcell FLO-MIN106 --kit SQK-RNA002 --recursive --fast5_out --cpu_threads_per_caller 5
+```
 
-# m1a-prediction
-#Part 1 model training
-#Get the fast5 file of IVT
-#multi_to_single_fast5
-multi_to_single_fast5 -i /home/share/shenglun/workspace/m1apre/preprocess/IVT_normalA_fast5 -s /home/share/shenglun/workspace/m1apre/preprocess/A_single_fast5
-multi_to_single_fast5 -i /home/share/shenglun/workspace/m1apre/preprocess/IVT_m1A_fast5 -s /home/share/shenglun/workspace/m1apre/preprocess/m1a_single_fast5
+**(3). Re-squiggle the raw signals**
 
-# guppy basecalling
-guppy_basecaller -i /home/share/shenglun/workspace/m1apre/preprocess/A_single_fast5 -s /home/share/shenglun/workspace/m1apre/preprocess/A_fastq --flowcell FLO-MIN106 --kit SQK-RNA002 --recursive --fast5_out --cpu_threads_per_caller 5
-guppy_basecaller -i /home/share/shenglun/workspace/m1apre/preprocess/m1a_single_fast5 -s /home/share/shenglun/workspace/m1apre/preprocess/m1a_fastq --flowcell FLO-MIN106 --kit SQK-RNA002 --recursive --fast5_out --cpu_threads_per_caller 5
+Tombo resquiggle reanalyzes these signals, attempting to correct or improve any errors that may have occurred previously, thereby enhancing the accuracy and reliability of the data. Using the referance gene fasta file to do the re-squiggle
 
-# Tombo resquiggle
-tombo resquiggle --overwrite /home/share/shenglun/workspace/m1apre/preprocess/m1a_fastq/workspace /home/share/shenglun/workspace/m1apre/preprocess/ref.fa --processes 5 --fit-global-scale --corrected-group RawGenomeCorrected_000 --include-event-stdev --num-most-common-errors 5 
-tombo resquiggle --overwrite /home/share/shenglun/workspace/m1apre/preprocess/A_fastq/workspace /home/share/shenglun/workspace/m1apre/preprocess/ref.fa --processes 5 --fit-global-scale --corrected-group RawGenomeCorrected_000 --include-event-stdev --num-most-common-errors 5 
+```
+tombo resquiggle --overwrite /path/to/fastq/workspace /path/to/referance_gene_fasta.fa --processes 5 --fit-global-scale --corrected-group RawGenomeCorrected_000 --include-event-stdev --num-most-common-errors 5
+```
 
-# Feature extraction
-python feature_extraction.py -i /home/share/shenglun/workspace/m1apre/preprocess/A_fastq/workspace -o /home/share/shenglun/workspace/m1apre/Afeature -t 12
-python feature_extraction.py -i /home/share/shenglun/workspace/m1apre/preprocess/m1a_fastq/workspace -o /home/share/shenglun/workspace/m1apre/m1afeature -t 8
+**(3). Feature extraction**
 
-# Training or Predicting
+Utilizing ``feature_extraction.py`` to extract electrical characteristics (such as signal means, standard deviations, and lengths) from re-squiggled events. Within each read, we identify NNANN motifs along the sequence and capture pertinent features for each position (-2, -1, 0, 1, 2) within the 5-mer.
+
+```
+python feature_extraction.py -i /path/to/fastq/workspace -o /path/to/feature_directory -t 12
+```
+
+# **Ⅲ. Using pre-processed data for result prediction or model training**
+
+**(1). m1a-prediction**
+
+Predicting N1-Methyladenosine by using our trained model.
+
+```
 python predict_xgboost.py -i /path/to/input_folder -o /path/to/output_folder -m /path/to/model_folder
+```
+
+**(2). Other modification-prediction-model training**
+
+If users want to train their own model for RNA modifications of interest, they can replicate the pre-processing steps by processing the raw data to obtain two sets of feature data: negative and positive. Then, they can use our script to train their own model. The script we provide will generate a model ensemble consisting of 256 models, along with evaluation metrics for all models, including accuracy, F1 score, MCC, AUPR, and AUROC, as well as ROC curves.
+
+```
 python training.py -m /path/to/mod_folder -u /path/to/unmod_folder -o /path/to/output_dir -e /path/to/evaluation_dir -p /path/to/plot_folder
+```
 
-# Process predict result
-python groupby.py -i /path/to/input_folder -o /path/to/output_folder
-python filter_and_combine.py -i /path/to/input_directory -o /path/to/output_file.csv
+# **Ⅳ. Site level analysis**
 
-# Binomil test
+After obtaining prediction results at the reads level using machine learning, we will provide a script to map the reads-level results to the site level.
+
+**(1). Classification processing of prediction result**
+
+ Using the provided script to categorize the predicted results according to motifs.
+
+ ```
+python process_csv.py -i /path/to/prediction_result_folder -o /path/to/output_folder
+ ```
+
+Perform a groupby operation on the classified data.
+
+ ```
+python groupby.py -i /path/to/processed_csv -o /path/to/output_folder
+ ```
+
+Integrate group-by results
+
+ ```
+python filter_and_combine.py -i /path/to/group-by_directory -o /path/to/output_file.csv
+ ```
+
+**(2). Binomil test**
+
+Users can select the parameters for the binomial distribution test based on the features of the test data themselves. the default p = 0.4, a = 0.01.
+
+ ```
 python binomial.py -i /path/to/input_directory -o /path/to/output_directory -p 0.4 -a 0.01
+ ```
 
 
-### Additional csv file processing script
-python process_csv.py -i /path/to/input_folder -o /path/to/output_folder
+
