@@ -135,3 +135,6 @@ python binomial.py -i /path/to/input_directory -o /path/to/output_directory -p 0
 
 
 
+All suggestions are welcome to Yuxin.Zhang17@student.xjtlu.edu.cn or Shenglun.Chen22@student.xjtlu.edu.cn
+
+
